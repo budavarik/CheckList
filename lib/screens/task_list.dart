@@ -121,39 +121,28 @@ class _TaskListState extends State<TaskList> {
     return showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        content: Builder(
-          builder: (context) {
-            // Get available height and width of the build area of this widget. Make a choice depending on the size.
-            var height = 0.0; //MediaQuery.of(context).size.height;
-            var width = MediaQuery.of(context).size.width;
-
-            return Container(
-              height: height,
-              width: width - 100,
-            );
-          },
-        ),
         shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.all(Radius.circular(10.0))),
-        title: Text("Új task:"),
+        title: Text("Új feladat neve:", style: TextStyle(color: Colors.white70),),
         actions: [
           TextField(
             controller: nameController,
+            style: TextStyle(color: Colors.white70),
             decoration: InputDecoration(
-              border: OutlineInputBorder(),
+              labelStyle: TextStyle(color: Colors.white70),
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black, width: 1.0),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black, width: 1.0),
+              ),
               labelText: 'Task neve',
             ),
           ),
           Row(
             children: [
               TextButton(
-                child: Text("Mégsem"),
-                onPressed: () {
-                  Navigator.pop(context);
-                },
-              ),
-              TextButton(
-                child: Text("Rögzít"),
+                child: Text("Rögzít", style: TextStyle(color: Colors.white70),),
                 onPressed: () async {
                   await tasks.insertTodo(nameController.text).then((value) {
                     var name = getTaskList();
@@ -166,6 +155,12 @@ class _TaskListState extends State<TaskList> {
                   Navigator.pop(context);
                 },
               ),
+              TextButton(
+                child: Text("Mégsem", style: TextStyle(color: Colors.white70),),
+                onPressed: () {
+                  Navigator.pop(context);
+                },
+              ),
             ],
           ),
         ],
@@ -174,86 +169,46 @@ class _TaskListState extends State<TaskList> {
   }
 
   dynamic ujTetelGomb() {
-    return AnimatedButton(
-      width: 90,
-      height: 50,
-      text: 'Új tétel',
-      borderRadius: 20,
-      selectedBackgroundColor: Colors.transparent,
-      selectedTextColor: Colors.greenAccent,
-      transitionType: TransitionType.BOTTOM_TO_TOP,
-      isReverse: true,
-      onPress: () {
+    return ElevatedButton(
+      style: raisedButtonStyle,
+      onPressed: () {
         newTask();
       },
-      textStyle: TextStyle(
-          fontSize: 18, color: Colors.deepOrange, fontWeight: FontWeight.w900),
+      child: Text('Új task hozzáadása'),
     );
   }
+
+  final ButtonStyle raisedButtonStyle = ElevatedButton.styleFrom(
+    onPrimary: Colors.black87,
+    primary: Colors.grey[300],
+    minimumSize: Size(88, 36),
+    padding: EdgeInsets.symmetric(horizontal: 1),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(5)),
+    ),
+  );
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("Taskok listája"),
+        title: Row(
+            textDirection: TextDirection.rtl,
+            children: [
+                ujTetelGomb(),
+          ],
+        ),
       ),
       body: SingleChildScrollView(
         child: AnimatedContainer(
           duration: Duration(seconds: 5),
-          child: Center(
-            child: Column(children: <Widget>[
-              SizedBox(
-                height: 10,
-              ),
-              Container(
-                width: MediaQuery.of(context).size.width - 20,
-                height: 80,
-                padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
-                decoration: BoxDecoration(
-                    border: Border.all(color: Colors.black),
-                    borderRadius: BorderRadius.circular(10.0),
-                    gradient: LinearGradient(
-                      begin: Alignment.topRight,
-                      end: Alignment.bottomLeft,
-                      colors: [
-                        Colors.white12,
-                        Colors.white,
-                      ],
-                    )),
-                child: Row(
-
-                    children: <Widget>[
-                      Expanded(
-                        flex: 8,
-                        child: Container(
-                          child: Row(
-                            children: [
-                            Text(
-                            "Kiválasztott felhasználó: $selectedKidName",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          ],
-                        ),
-                        ),
-                      ),
-                      Expanded(
-                        flex: 2,
-                        child: Container(
-                          child: Row(
-                            children: [
-                              ujTetelGomb(),
-                            ],
-                          ),
-                        ),
-                      ),
-                ]),
-              ),
-              SizedBox(
-                height: 10,
-              ),
-              taskListBuilder(),
-            ]),
-          ),
+          child: Column(children: <Widget>[
+            SizedBox(
+              height: 10,
+            ),
+            taskListBuilder(),
+          ]),
         ),
       ),
     );

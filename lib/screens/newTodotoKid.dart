@@ -27,8 +27,6 @@ class _newTodoToKidState extends State<newTodoToKid> {
   DateTime selectedToDate = DateTime.now();
   TimeOfDay onTimeChange = TimeOfDay.now();
   TimeOfDay pickedTime = TimeOfDay.now();
-  bool toggleFrom = false;
-  bool toggleTo = false;
   bool checkedValue = false;
   List<String> days = [
     'Hétfő',
@@ -53,9 +51,25 @@ class _newTodoToKidState extends State<newTodoToKid> {
 
   Future<void> _selectFromDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
+        builder: (BuildContext context, Widget child) {
+          return Theme(
+            data: ThemeData.dark().copyWith(
+              colorScheme: ColorScheme.dark(
+                primary: Colors.white,
+                onPrimary: Colors.black,
+                surface: Colors.grey,
+                onSurface: Colors.black,
+              ),
+              dialogBackgroundColor: Colors.grey,
+            ),
+            child: child,
+          );
+        },
+        cancelText: "Mégsem",
+        confirmText: "Kiválaszt",
         context: context,
         initialDate: selectedFromDate,
-        firstDate: DateTime(2015, 8),
+        firstDate: DateTime(2020, 8),
         lastDate: DateTime(2101));
     if (picked != null && picked != selectedFromDate)
       setState(() {
@@ -65,9 +79,25 @@ class _newTodoToKidState extends State<newTodoToKid> {
 
   Future<void> _selectToDate(BuildContext context) async {
     final DateTime picked = await showDatePicker(
+        builder: (BuildContext context, Widget child) {
+          return Theme(
+            data: ThemeData.dark().copyWith(
+              colorScheme: ColorScheme.dark(
+                primary: Colors.white,
+                onPrimary: Colors.black,
+                surface: Colors.grey,
+                onSurface: Colors.black,
+              ),
+              dialogBackgroundColor: Colors.grey,
+            ),
+            child: child,
+          );
+        },
+        cancelText: "Mégsem",
+        confirmText: "Kiválaszt",
         context: context,
         initialDate: selectedToDate,
-        firstDate: DateTime(2015, 8),
+        firstDate: DateTime(2020, 8),
         lastDate: DateTime(2101));
     if (picked != null && picked != selectedToDate)
       setState(() {
@@ -113,6 +143,13 @@ class _newTodoToKidState extends State<newTodoToKid> {
       );
   }
 
+  bool isDayCheck() {
+    for (bool dayCheck in daysCheck) {
+      if (dayCheck) return true;
+    }
+    return false;
+  }
+
   void createTodoList() {
     for (DateTime aktDate = selectedFromDate; aktDate.isBefore(selectedToDate); aktDate = new DateTime(aktDate.year, aktDate.month, aktDate.day + 1)) {
       if (daysCheck[aktDate.weekday-1]) {
@@ -128,101 +165,103 @@ class _newTodoToKidState extends State<newTodoToKid> {
     //var aktDate = DateTime.parse(responseData[i]['whenDate']);
   }
 
+  final ButtonStyle raisedButtonStyle = ElevatedButton.styleFrom(
+    onPrimary: Colors.black87,
+    primary: Colors.grey[300],
+    minimumSize: Size(88, 36),
+    padding: EdgeInsets.symmetric(horizontal: 16),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(5)),
+    ),
+  );
+
+  dynamic mentesGomb() {
+    return ElevatedButton(
+      style: raisedButtonStyle,
+      onPressed: () {
+        createTodoList();
+        Navigator.pop(context);
+        Navigator.pop(context);
+      },
+      child: Text('Mentés'),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Row(
+          textDirection: TextDirection.rtl,
           children: <Widget>[
-            Text("Új feladat hozzáadása"),
-            SizedBox(
-              width: 50,
-            ),
-            FlatButton(
-                padding: EdgeInsets.fromLTRB(10, 20, 0, 0),
-                color: Colors.amber,
-                shape: RoundedRectangleBorder(side: BorderSide.none),
-                child: Text('Mentés'),
-                onPressed: () {
-                  createTodoList();
-                  Navigator.pop(context);
-                  Navigator.pop(context);
-
-                  //Navigator.push(context,MaterialPageRoute(builder: (context) => SelectKidScreen()));
-                }),
+            (isDayCheck() ? mentesGomb() : Text("")),
           ],
         ),
       ),
-      body: Container(
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Text("Feladat: $taskName"),
-              ],
-            ),
-            Row(
-              children: [
-                Text(
-                    "Mettől: " + "${selectedFromDate.toLocal()}".split(' ')[0]),
-                SizedBox(
-                  width: 1.0,
-                ),
-                IconButton(
-                    icon: toggleFrom
-                        ? Icon(Icons.favorite_border)
-                        : Icon(
-                            Icons.favorite,
-                          ),
-                    onPressed: () {
-                      toggleFrom = !toggleFrom;
-                      _selectFromDate(context);
-                    }),
-                SizedBox(
-                  width: 1.0,
-                ),
-                Text("--"),
-                SizedBox(
-                  width: 1.0,
-                ),
-                Text("Meddig: " + "${selectedToDate.toLocal()}".split(' ')[0]),
-                SizedBox(
-                  height: 10.0,
-                ),
-                IconButton(
-                    icon: toggleTo
-                        ? Icon(Icons.favorite_border)
-                        : Icon(
-                            Icons.favorite,
-                          ),
-                    onPressed: () {
-                      toggleTo = !toggleTo;
-                      _selectToDate(context);
-                    }),
-
-                SizedBox(
-                  width: 1.0,
-                ),
-                Text("Hánykor: " + "${onTimeChange.hour}:${util.normalizeTimeMin(onTimeChange.minute)}"),
-                SizedBox(
-                  height: 10.0,
-                ),
-                IconButton(
-                    icon: toggleTo
-                        ? Icon(Icons.favorite_border)
-                        : Icon(
-                      Icons.favorite,
-                    ),
-                    onPressed: () {
-                      toggleTo = !toggleTo;
-                      _selectTime(context);
-                    }),
-
-              ],
-            ),
-            for (int i=0; i<days.length; i++) weekDays(i),
-          ],
+      body: SingleChildScrollView
+        (padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+        child: Container(
+          padding: EdgeInsets.fromLTRB(10, 10, 10, 0),
+          decoration: BoxDecoration(
+              border: Border.all(color: Colors.black),
+              borderRadius: BorderRadius.circular(10.0),
+              gradient: LinearGradient(
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+                colors: [
+                  Colors.white12,
+                  Colors.white,
+                ],
+              )),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Text("Feladat: $taskName"),
+                ],
+              ),
+              Row(
+                children: [
+                  Text(
+                      "Mettől: " + "${selectedFromDate.toLocal()}".split(' ')[0]),
+                  SizedBox(
+                    width: 1.0,
+                  ),
+                  IconButton(
+                      icon: Icon(Icons.analytics_outlined),
+                      onPressed: () {
+                        _selectFromDate(context);
+                      }),
+                  ]),
+              Row(
+                children: [
+                  Text("Meddig: " + "${selectedToDate.toLocal()}".split(' ')[0]),
+                  SizedBox(
+                    height: 10.0,
+                  ),
+                  IconButton(
+                      icon: Icon(Icons.analytics_outlined),
+                      onPressed: () {
+                        _selectToDate(context);
+                      }),
+                  ]),
+              Row(
+                children: [
+                  Text("Hánykor: " + "${onTimeChange.hour}:${util.normalizeTimeMin(onTimeChange.minute)}"),
+                  SizedBox(
+                    height: 10.0,
+                  ),
+                  IconButton(
+                      icon: Icon(Icons.analytics_outlined),
+                      onPressed: () {
+                        _selectTime(context);
+                      }),
+                ],
+              ),
+              for (int i=0; i<days.length; i++) weekDays(i),
+            ],
+          ),
         ),
       ),
     );

@@ -28,7 +28,6 @@ class _SelectKidScreenState extends State<SelectKidScreen> {
   DateTime selectedToDate = DateTime.now();
   bool toggleFrom = false;
   bool toggleTo = false;
-  bool voltSzures = false;
 
   @override
   void initState() {
@@ -72,18 +71,9 @@ class _SelectKidScreenState extends State<SelectKidScreen> {
     return retVal;
   }
 
-  Future<String> getKidTasks() async {
-    String retVal = null;
-    voltSzures = true;
-    var index;
-    for (var value in extractedKidsData) {
-      if (value.values.contains(selectedKid)) {
-        index = value['id'];
-      }
-    }
-    kids
-        .getKidsTodos(
-            index, selectedFromDate.toString(), selectedToDate.toString())
+  Future<void> getKidsTodo(index) async {
+    await kids.getKidsTodos(
+        index, selectedFromDate.toString(), selectedToDate.toString())
         .then((value) {
       extractedKidTodoDatas.clear();
       final pref = SharedPreferences.getInstance().then((pref) {
@@ -97,7 +87,16 @@ class _SelectKidScreenState extends State<SelectKidScreen> {
         }
       });
     });
-    return retVal;
+  }
+
+  Future<void> getKidTasks() async {
+    var index;
+    for (var value in extractedKidsData) {
+      if (value.values.contains(selectedKid)) {
+        index = value['id'];
+      }
+    }
+    await getKidsTodo(index);
   }
 
   Future<void> _selectFromDate(BuildContext context) async {
@@ -292,38 +291,6 @@ class _SelectKidScreenState extends State<SelectKidScreen> {
     );
   }
 
-  dynamic szuresGomb() {
-/*
-    return AnimatedButton(
-      width: 60,
-      height: 30,
-      text: '',
-      backgroundColor: Colors.transparent,
-      selectedBackgroundColor: Colors.transparent,
-      selectedTextColor: Colors.greenAccent,
-      transitionType: TransitionType.BOTTOM_TO_TOP,
-      isReverse: true,
-      onPress: () {
-        voltSzures = true;
-        getKidTasks().then((value) => {
-              if (mounted) {setState(() {})}
-            });
-      },
-      textStyle: TextStyle(
-          fontSize: 18, color: Colors.deepOrange, fontWeight: FontWeight.w900),
-    );
- */
-    return IconButton(
-        iconSize: 40,
-        icon: Icon(Icons.where_to_vote_outlined),
-        onPressed: () {
-          voltSzures = true;
-          getKidTasks().then((value) => {
-            if (mounted) {setState(() {})}
-          });
-        });
-  }
-
   dynamic ujTetelGomb() {
     return ElevatedButton(
       style: raisedButtonStyle,
@@ -339,9 +306,7 @@ class _SelectKidScreenState extends State<SelectKidScreen> {
             MaterialPageRoute(
                 builder: (context) => TaskList(selectedKid: index)))
             .then((value) {
-          getKidTasks().then((value) => {
-            if (mounted) {setState(() {})}
-          });
+          getKidTasks();
         });
       },
       child: Text('Új tétel hozzáadása'),
@@ -354,7 +319,7 @@ class _SelectKidScreenState extends State<SelectKidScreen> {
     minimumSize: Size(88, 36),
     padding: EdgeInsets.symmetric(horizontal: 16),
     shape: const RoundedRectangleBorder(
-      borderRadius: BorderRadius.all(Radius.circular(2)),
+      borderRadius: BorderRadius.all(Radius.circular(5)),
     ),
   );
 
@@ -390,9 +355,7 @@ class _SelectKidScreenState extends State<SelectKidScreen> {
                       onChanged: (newValue) {
                         setState(() {
                           selectedKid = newValue;
-                          getKidTasks().then((value) => {
-                            if (mounted) {setState(() {})}
-                          });
+                          getKidTasks();
                         });
                       },
                       items: kidsMenu.map((location) {
@@ -413,9 +376,7 @@ class _SelectKidScreenState extends State<SelectKidScreen> {
                         alignment: Alignment.topRight,
                         child: Column(
                           children: [
-                            ((selectedKid != null &&
-                                    selectedKid != "" &&
-                                    voltSzures)
+                            ((selectedKid != null)
                                 ? ujTetelGomb() : Text("")),
                           ],
                         )),
@@ -433,9 +394,8 @@ class _SelectKidScreenState extends State<SelectKidScreen> {
                         tooltip: "Dátumtól",
                         icon: Icon(Icons.analytics_outlined),
                         onPressed: () {
-                          _selectFromDate(context);
-                          getKidTasks().then((value) => {
-                            if (mounted) {setState(() {})}
+                          _selectFromDate(context).then((value) {
+                            getKidTasks();
                           });
                         }),
                     Text("Dátumig: " +
@@ -448,9 +408,8 @@ class _SelectKidScreenState extends State<SelectKidScreen> {
                         tooltip: "Dátumig",
                         icon: Icon(Icons.analytics_outlined),
                         onPressed: () {
-                          _selectToDate(context);
-                          getKidTasks().then((value) => {
-                            if (mounted) {setState(() {})}
+                          _selectToDate(context).then((value) {
+                            getKidTasks();
                           });
                         }),
                   ],
